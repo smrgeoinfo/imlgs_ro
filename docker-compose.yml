@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    
+    # Volumes for Live Reloading (Hot Module Replacement)
+    volumes:
+      # Sync your local 'src' folder so changes appear instantly
+      - ./ui/src:/app/src
+      # Sync the config file so you can edit menus/titles
+      - ./ui/observablehq.config.js:/app/observablehq.config.js
+      # DO NOT sync node_modules (keeps the container's patched version safe)
+      - /app/node_modules
+
+    # Set environment to development
+    environment:
+      - NODE_ENV=development

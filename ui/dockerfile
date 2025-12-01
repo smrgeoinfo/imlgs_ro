@@ -1,0 +1,24 @@
+FROM node:20-slim
+
+# Install the 'patch' utility (Debian/Ubuntu based)
+RUN apt-get update && apt-get install -y patch && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# 1. Install Dependencies first (Caching layer)
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
+
+# 2. Apply the Critical Patch
+COPY ddb_132.patch .
+RUN patch node_modules/@observablehq/framework/dist/duckdb.js ddb_132.patch
+
+# 3. Copy the rest of the application code
+COPY . .
+
+# Expose the default Observable Framework port
+EXPOSE 3000
+
+# Start the dev server
+# --host 0.0.0.0 is REQUIRED to make it accessible outside the container
+CMD ["yarn", "dev", "--host", "0.0.0.0"]
