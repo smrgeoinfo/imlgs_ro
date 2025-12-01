@@ -72,7 +72,7 @@ const display_fields = [
     "water_depth",
 ];
 
-const pq_source = "https://s3.beehivebeach.com/imlgs/imlgs_full_2.parquet";
+const pq_source = "https://imlgs-waf.s3.us-east-2.amazonaws.com/imlgs_full.parquet";
 //const pq_source = "https://zenodo.org/api/records/16389102/files/imlgs_full_2.parquet/content";
 const imlgs_data = new IMLGSData(pq_source, "imlgs", display_fields);
 await imlgs_data.initialize()
