@@ -1,5 +1,4 @@
 ---
-theme: dashboard
 footer: ""
 sidebar: false
 head: |

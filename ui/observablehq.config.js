@@ -28,7 +28,7 @@ export default {
   markdownIt: (md) =>   md.use(MarkdownItFootnote, MarkdownItGitHubAlerts),
 
   // Some additional configuration options and their defaults:
-  // theme: "default", // try "light", "dark", "slate", etc.
+  theme: ["light", "dark"],
   // header: "", // what to show in the header (HTML)
   // footer: "Built with Observable.", // what to show in the footer (HTML)
   // sidebar: true, // whether to show the sidebar
