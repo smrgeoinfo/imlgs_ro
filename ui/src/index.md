@@ -306,7 +306,8 @@ const repositoryStyle = makeColors(imlgs_data);
 let selected = null;
 
 async function loadParquetLayer(db, inputs) {
-    const where_clause = db.getWhereClause(inputs, "geometry is not null");
+    // const where_clause = db.getWhereClause(inputs, "geometry is not null");
+    const where_clause = db.getWhereClause(inputs, "lat IS NOT NULL AND lon IS NOT NULL");
     const data = await db.select(db.field_sets.spatial, where_clause, false);
     const format = new WKB();
     let i = 0;
@@ -335,8 +336,8 @@ async function countSamplesInPolygon(db, inputs, wkt) {
     if (!db) {
         return 0;
     }
-    const spatial_clause = `geometry IS NOT NULL AND st_within(geometry, st_geomFromText('${wkt}'))`;
-    // const spatial_clause = `lat IS NOT NULL AND lon IS NOT NULL AND st_within(st_point(lon, lat), st_geomFromText('${wkt}'))`;
+    // const spatial_clause = `geometry IS NOT NULL AND st_within(geometry, st_geomFromText('${wkt}'))`;
+    const spatial_clause = `lat IS NOT NULL AND lon IS NOT NULL AND st_within(st_point(lon, lat), st_geomFromText('${wkt}'))`;
     const where_clause = db.getWhereClause(inputs, spatial_clause);
     return await db.count(where_clause);
 }

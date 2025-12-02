@@ -34,13 +34,13 @@ const DEFAULT_RECORD_FIELDS = [
     "lake",
     "leg",
     "sample_comments",
-    "ST_AsText(geometry) as geometry",
+    "ST_AsText(ST_Point(lon, lat)) as geometry",
     "begin_jd"
 ];
 
 const DEFAULT_SPATIAL_FIELDS = [
     "imlgs", 
-    "ST_AsWKB(geometry) as wkb", 
+    "ST_AsWKB(ST_Point(lon, lat)) as wkb", 
     "facility.facility_code as repository", 
     "platform", 
     "begin_jd"
