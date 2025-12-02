@@ -11,14 +11,20 @@ head: |
 
 <details>
     <summary>About</summary>
-<div class="grid grid-cols-2">
-<div class="note">This site provides a read-only view of a snaptot of the 
-<a href='https://www.ncei.noaa.gov/products/index-marine-lacustrine-samples'>Index to Marine and Lacustrine Geological Samples</a>
-retrieved immediately prior to site deomissioning on 2025-05-05.</div>
-<div class="warning">This is a development site and not the final location of this resource. Links to this site and its content are likely
-to break as content evolves.</div>
-</div>
-</div>
+    <div class="grid grid-cols-2">
+        <div class="note">
+            This site provides a read-only view of a snapshot of the
+            <a href="https://www.ncei.noaa.gov/products/index-marine-lacustrine-samples">
+            Index to Marine and Lacustrine Geological Samples
+            </a>
+            retrieved immediately prior to site decomissioning on 2025-05-05. Read more about SESAR's ongoing efforts related to the IMLGS,
+            <a href="https://www.geosamples.org/news/current-events/notice-to-the-community-regarding-the-imlgs">here</a>.
+        </div>
+        <div class="warning">
+            This is a development site and not the final home for this resource.  
+            URLs and content may change, and links to this site are likely to break as the project evolves.
+        </div>
+    </div>
 </details>
 
 
@@ -330,6 +336,7 @@ async function countSamplesInPolygon(db, inputs, wkt) {
         return 0;
     }
     const spatial_clause = `geometry IS NOT NULL AND st_within(geometry, st_geomFromText('${wkt}'))`;
+    // const spatial_clause = `lat IS NOT NULL AND lon IS NOT NULL AND st_within(st_point(lon, lat), st_geomFromText('${wkt}'))`;
     const where_clause = db.getWhereClause(inputs, spatial_clause);
     return await db.count(where_clause);
 }
