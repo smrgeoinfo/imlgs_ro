@@ -46,6 +46,12 @@ const DEFAULT_SPATIAL_FIELDS = [
     "begin_jd"
 ];
 
+// --- Read URL Parameters ---
+export function getURLParam(key) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(key);
+}
+
 export const debounce = (callback, wait) => {
   let timeoutId = null;
   return (...args) => {
@@ -96,49 +102,10 @@ export async function addJSONLD(pid, jld_data) {
         soele.setAttribute("id", pid);
     }
     soele.text = JSON.stringify(jld_data, null, 2);
-    //console.log(soele.text);
     if (create_new) {
         document.querySelector("head").appendChild(soele);
     }
 }
-
-
-/**
- * Adds an observer to an input and yield a custom value, in this 
- * case, the input value and a template string associated with the input.
- * 
- * This is used to generate an SQL where clause for the input value
- * @param {*} inputer 
- * @param {*} template 
- * @returns 
- */
-export function newInputObserver(inputer, template) {
-    const res = Generators.observe((notify) => {
-        const inputted = () => {
-            notify({"v":inputer.value, "c": template});
-        };
-        inputted();
-        inputer.addEventListener("input", inputted);
-        return () => inputer.removeEventListener("input", inputted);
-    });
-    ui_inputs.push(res);
-    return res;
-}
-
-
-export function newTextInputObserver(inputer, template) {
-    const res = Generators.observe((notify) => {
-        const inputted = () => {
-            notify({"v":inputer.value, "c": template});
-        };
-        inputted();
-        inputer.addEventListener("input", inputted);
-        return () => inputer.removeEventListener("input", inputted);
-    });
-    ui_inputs.push(res);
-    return res;
-}
-
 
 
 export class Facet {
@@ -167,26 +134,14 @@ export class Facet {
         return res;
     }
 
-    /**
-     * Return the value clause for this facet,
-     *   SELECT ${facet.valueClause()} FROM source
-     */
     valueClause(name="v") {
         return `${this.field} AS ${name}`;
     }
 
-    /**
-     * Return the FROM clause for this facet,
-     *   SELECT value FROM ${facet.fromClause()}
-     */
     fromClause() {
         return `${this.source}`
     }
 
-    /** 
-     * Return the where clause for this facet,
-     *   SELECT value FROM source WHERE ${facet.whereClause()}
-     */
     whereClause() {
         return `${this._where}=?`;
     }
@@ -196,9 +151,6 @@ export class Facet {
             label: this.name,
             value: this.value
         };
-        //if (this.value !== UNSELECTED) {
-        //    opts.value = this.value;
-        //}
         this.input = Inputs.select(await this.values(facets), opts)
     }
 }
@@ -213,7 +165,6 @@ export class IMLGSData {
             "record": DEFAULT_RECORD_FIELDS,
             "spatial": DEFAULT_SPATIAL_FIELDS
         }
-        //this.display_fields = display_fields ? display_fields : DEFAULT_DISPLAY_FIELDS;
         this.where_clause_join = " AND ";
         this.ddb = null;
         this.MAX_DISTINCT = max_distinct || 7000;
@@ -255,21 +206,19 @@ export class IMLGSData {
             }
 
         }
-        //console.log(`getWhereClause: ${where_clause}`);
         return new WhereClause(where_clause, params);
     }    
 
     async getColumns() {
         const q = `select column_name, column_type from (describe ${this.data_view})`;
         const result = await this.ddb.query(q);
-        //return Array.from(result, (row) => [row.column_name, row.column_type]);
         return result;
     }
 
     async columnStats(column, key) {
         const q = `select '${key}' as k, min(${column}) as min, max(${column}) as max, count(distinct ${column}) as n from ${this.data_view}`;
         return await this.ddb.queryRow(q);
-}    
+    }    
 
     async count(where_clause=null) {
         let query = `SELECT count(*) AS n FROM ${this.data_view}`;
@@ -324,7 +273,6 @@ export class IMLGSData {
         let query = `SELECT ${fields.join(", ")} FROM ${this.data_view}`;
         let params = [];
         if (where_clause !== null) {
-            // Always add a space, just in case clause comes in without one.
             query = query + " " + where_clause.clause;
             params = where_clause.params;
         }
@@ -334,10 +282,6 @@ export class IMLGSData {
         return this.ddb.query(query, params);
     }
 
-    /**
-     * Perform a general regexp search across a few common fields.
-     * @param {*} term 
-     */
     async search(term){
         const query = `SELECT ${this.field_sets.table.join(',')} FROM ${this.data_view} WHERE 
         regexp_matches(imlgs ,?,'i') OR regexp_matches(sample,?,'i') OR regexp_matches(igsn,?,'i')
@@ -345,10 +289,6 @@ export class IMLGSData {
         return this.db.query(query, [term, term, term, term]);
     }
 
-    /**
-     * retrieve 
-     * @param {*} pid 
-     */
     async getRecord(pid) {
         const clause = {
             "clause":" WHERE imlgs=?",
@@ -383,7 +323,6 @@ export class IMLGSData {
         return jld;
     }
 
-
     async getRecordHtml(imlgs) {
         const R= await this.getRecord(imlgs);
         return html`<div class="card">
@@ -407,7 +346,6 @@ export class IMLGSData {
 </tbody>
 </table>
     </div>
-
     <div class="card">
 <table style="width:100%; max-width:100%;">
 <thead><tr>
@@ -422,17 +360,16 @@ export class IMLGSData {
 <td>${intervalComment(interval)}</td>
 </tr>`)}
 </tbody></table>
-    </div>
-    `        
+    </div>`        
     }
 
-    async newTextInput(column, label) {
+    // ---Accepts defaultValue (for URL params) ---
+    async newTextInput(column, label, defaultValue = null) {
         const datalist = [];
         const nvalues = await this.countDistinct(column, NULL_WHERE_CLAUSE);
         if (nvalues < this.MAX_DISTINCT) {
             const rows = await this.distinctCounts(column, NULL_WHERE_CLAUSE)
             for (const v of rows) {
-                //datalist.push(`${v.d} (${v.n})`);
                 datalist.push(`${v.d}`);
             }
         }
@@ -440,12 +377,13 @@ export class IMLGSData {
             label: `${label} (${nvalues})`,
             submit: false,
             datalist: datalist,
-            autocomplete:"off"
-        }            
-        );
+            autocomplete:"off",
+            value: defaultValue || "" 
+        });
     }
 
-    async newSelectInput(column, label) {
+    // --- Accepts defaultValue AND uses find() to match label ---
+    async newSelectInput(column, label, defaultValue = null) {
         const nvalues = await this.countDistinct(column, NULL_WHERE_CLAUSE);
         const datalist = [['All', nvalues]];
         if (nvalues < this.MAX_DISTINCT) {
@@ -454,34 +392,38 @@ export class IMLGSData {
                 datalist.push([v.d, v.n]);
             }
         }
+        
+        // Find matching item from URL
+        let initialSelection = null;
+        if (defaultValue) {
+             initialSelection = datalist.find(d => 
+                String(d[0]).toLowerCase() === String(defaultValue).toLowerCase()
+             );
+        }
+
         return Inputs.select(datalist, {
             label: `${label} (${nvalues})`,
             multiple: false,
             submit: true,
             format: (v) => {return `${v[0]} (${v[1]})`},
+            value: initialSelection ? initialSelection[0] : null,
             valueof: (v) => {
                 if (v[0] === 'All') {
                     return ''
                 };
                 return v[0];
             }
-            }            
-        );
+        });
     }
 
-
-    /**
-     * Adds an observer to an input and yield a custom value, in this 
-     * case, the input value and a template string associated with the input.
-     * 
-     * This is used to generate an SQL where clause for the input value
-     * @param {*} inputer 
-     * @param {*} template 
-     * @returns 
-     */
-    async newInputObserver(column, label, template) {
-        //const inputer = await this.newTextInput(column, label);
-        const inputer = await this.newSelectInput(column, label);
+    // --- Reads URL param if urlKey is provided ---
+    async newInputObserver(column, label, template, urlKey = null) {
+        // Look for URL parameter (fallback to column name if urlKey not provided)
+        const urlVal = getURLParam(urlKey || column);
+        
+        // Pass urlVal as the 3rd argument to newSelectInput
+        const inputer = await this.newSelectInput(column, label, urlVal);
+        
         const res = Generators.observe((notify) => {
             const inputted = () => {
                 notify({"v":inputer.value, "c": template});
@@ -494,18 +436,14 @@ export class IMLGSData {
         return [inputer, res];
     }
 
-    /**
-     * Adds an observer to an input and yield a custom value, in this 
-     * case, the input value and a template string associated with the input.
-     * 
-     * This is used to generate an SQL where clause for the input value
-     * @param {*} inputer 
-     * @param {*} template 
-     * @returns 
-     */
-    async newTextInputObserver(column, label, template) {
-        //const inputer = await this.newTextInput(column, label);
-        const inputer = await this.newTextInput(column, label);
+    // --- Reads URL param if urlKey is provided ---
+    async newTextInputObserver(column, label, template, urlKey = null) {
+        // Look for URL parameter
+        const urlVal = getURLParam(urlKey || column);
+        
+        // Pass urlVal as the 3rd argument to newTextInput
+        const inputer = await this.newTextInput(column, label, urlVal);
+        
         const res = Generators.observe((notify) => {
             const inputted = () => {
                 notify({"v":inputer.value, "c": template});
@@ -522,8 +460,6 @@ export class IMLGSData {
 
 
 //-----
-// From: https://github.com/stevebest/julian/blob/master/index.js
-
 const DAY = 86400000;
 const UNIX_EPOCH_JULIAN_DATE = 2440587.5;
 
@@ -558,7 +494,6 @@ function formatDict(d) {
 }
 
 export function intervalComment(interval) {
-    //console.log(interval)
     const c = [formatDict(interval.int_comments)];
     if (interval.description) {
         c.push(formatDict(interval.description));
@@ -568,35 +503,3 @@ export function intervalComment(interval) {
     }
     return c.join("; ");
 }
-
-
-/** WIP - from https://observablehq.com/@tophtucker/custom-table-click-to-select-row
- * Need to update this to work in Framework.
-export function CTable(data, keys = Object.keys(data[0])) {
-  const onclick = (e, row) => {
-    for (const row of node.querySelectorAll("tbody tr")) row.style.background = "none";
-    e.currentTarget.style.background = "#eee";
-    set(node, row);
-  };
-  const node = html`<div style="max-height: 500px; overflow-y: auto;">
-    <table style="margin: 0; border-collapse: separate; border-spacing: 0;">
-      <thead>
-        <tr style="border-bottom: none;">
-          ${keys.map(key => html`<th style="position: sticky; top: 0; border-bottom: solid 1px #ccc; background: #fff;">
-            ${key}
-          </th>`)}
-        </tr>
-      </thead>
-      <tbody>
-        ${data.map(row => html`<tr onclick=${(e) => onclick(e, row)}>
-          ${keys.map(key => html`<td style="border-bottom: solid 1px #eee;">
-            ${row[key]}
-          </td>`)}
-        </tr>`)}
-      </tbody>
-    </table>
-  </div>`;
-  set(node, null);
-  return node;
-}
-*/

@@ -100,16 +100,28 @@ function setVisibleRecordCount(v) {
 }
 
 const [_platform_input, platform_input] = await imlgs_data.newInputObserver(
-    "platform", "Platform", "regexp_matches(platform,?,'i')"
+    "platform", 
+    "Platform", 
+    "regexp_matches(platform,?,'i')",
+    "platform" // URL param: ?platform=...
 );
 const [_device_input, device_input] = await imlgs_data.newInputObserver(
-    "device", "Device", "regexp_matches(device,?,'i')"
+    "device", 
+    "Device", 
+    "regexp_matches(device,?,'i')",
+    "device" // URL param: ?device=...
 );
 const [_repository_input, repository_input] = await imlgs_data.newInputObserver(
-    "facility.facility_code", "Repository", "regexp_matches(facility.facility_code ,?,'i')"
+    "facility.facility_code", 
+    "Repository", 
+    "regexp_matches(facility.facility_code ,?,'i')",
+    "repository" // URL param: ?repository=...
 );
 const [_cruise_input, cruise_input] = await imlgs_data.newTextInputObserver(
-    "cruise.cruise", "Cruise", "cruise.cruise=?"
+    "cruise.cruise", 
+    "Cruise", 
+    "cruise.cruise=?",
+    "cruise" // URL param: ?cruise=...
 );
 
 display(_platform_input);
