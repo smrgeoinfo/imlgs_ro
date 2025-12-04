@@ -9,7 +9,7 @@ head: |
 
 <h1 style="max-width:100%">Index to Marine and Lacustrine Geological Samples</h1>
 
-<details>
+<details open>
     <summary>About</summary>
     <div class="grid grid-cols-2">
         <div class="note">
