@@ -194,6 +194,14 @@ ui_inputs.push(search_input);
 let theRecords = getMatchingRecords(ui_inputs);
 setRecordCount(getMatchingCount(ui_inputs));
 
+// Auto-select the first record when search results change
+{
+    const records = await theRecords;
+    if (records && records.length > 0) {
+        updateSelectedRecordImlgs(records[0].imlgs);
+    }
+}
+
 ```
 
 Matching: ${recordCount}
@@ -618,19 +626,16 @@ async function loadSampleRecord(pid) {
 }
 
 async function loadSampleRecordTV(tv, pid) {
-    if (window.visibleTab == "map") {
-        if (pid) {
-            return imlgs_data.getRecordHtml(pid);
-        } else {
-            return html`<p>Waiting for record selection...</p>`;            
-        }
-    } else {
-        if (tv) {
-            return imlgs_data.getRecordHtml(tv.imlgs);
-        } else {
-            return html`<p>Waiting for record selection...</p>`;            
-        }
+    // Always prioritize selectedRecordImlgs (pid) if set - this handles both
+    // map clicks and search results auto-selection
+    if (pid) {
+        return imlgs_data.getRecordHtml(pid);
     }
+    // Fall back to table selection if no pid
+    if (tv && tv.imlgs) {
+        return imlgs_data.getRecordHtml(tv.imlgs);
+    }
+    return html`<p>Waiting for record selection...</p>`;
 }
 ```
 

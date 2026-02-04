@@ -10,6 +10,7 @@ The application allows users to:
 - Browse and search geological sample records
 - Filter by platform, device, repository, cruise, and sample identifiers (IMLGS ID or IGSN)
 - View sample locations on an interactive map
+- Auto-display sample details when searching by identifier (works in both Map and Table views)
 - Access detailed sample metadata including stratigraphic intervals
 - Link to external IGSN resolver for registered samples
 
@@ -22,14 +23,15 @@ imlgs_ro/
 │   │   ├── index.md        # Main application page
 │   │   ├── lib/
 │   │   │   └── common.js   # Core data access class (IMLGSData)
-│   │   └── data/           # Local parquet file (for development)
+│   │   └── data/
+│   │       └── imlgs_full.parquet  # Bundled dataset (~17MB)
 │   ├── observablehq.config.js
 │   └── package.json
 ├── cli/                    # Python CLI utilities
 │   └── imlgs/
 │       └── __main__.py     # CSV to Parquet conversion tool
-├── data/                   # Source data files
-│   └── imlgs_full.parquet  # Complete IMLGS dataset (~17MB)
+├── data/                   # Source data files (original copy)
+│   └── imlgs_full.parquet
 └── .github/workflows/
     └── deploy.yml          # GitHub Pages deployment
 ```
@@ -46,11 +48,11 @@ imlgs_ro/
 
 ### How It Works
 
-1. **Data Loading**: The application loads a Parquet file containing all IMLGS records either from a remote S3 bucket or locally served file.
+1. **Data Loading**: The application loads a bundled Parquet file containing all IMLGS records (~17MB). The file is served directly from GitHub Pages.
 
 2. **In-Browser SQL**: DuckDB WASM runs entirely in the browser, enabling SQL queries against the Parquet data without a backend server. Extensions for spatial queries (`spatial`) and H3 hexagonal binning (`h3`) are loaded automatically.
 
-3. **Reactive Filtering**: User inputs (dropdowns, text fields) generate SQL WHERE clauses that filter records in real-time. The `IMLGSData` class in `common.js` manages query construction and execution.
+3. **Reactive Filtering**: User inputs (dropdowns, text fields) generate SQL WHERE clauses that filter records in real-time. The `IMLGSData` class in `common.js` manages query construction and execution. When filtering by Sample ID, the first matching record is automatically selected and its details displayed.
 
 4. **Map Visualization**: Sample locations are rendered as WebGL points on an OpenLayers map, color-coded by repository. The map supports hover tooltips, click-to-select, and viewport-based counting.
 
@@ -89,22 +91,9 @@ imlgs_ro/
 
 5. Open http://localhost:3000
 
-### Data Source Configuration
+### Data Source
 
-The application can load data from either a local file or remote URL. Configure this in `ui/src/index.md`:
-
-```javascript
-// Set USE_LOCAL_DATA to true for local development, false for remote/production
-const USE_LOCAL_DATA = true;
-
-const REMOTE_PARQUET_URL = "https://imlgs-waf.s3.us-east-2.amazonaws.com/imlgs_full.parquet";
-const LOCAL_PARQUET_PATH = import.meta.resolve("./data/imlgs_full.parquet");
-```
-
-For local development, copy the parquet file to `ui/src/data/`:
-```bash
-cp data/imlgs_full.parquet ui/src/data/
-```
+The parquet data file (~17MB) is bundled with the application in `ui/src/data/imlgs_full.parquet`. This avoids CORS issues and makes the application self-contained.
 
 ### Building for Production
 
