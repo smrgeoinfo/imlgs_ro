@@ -191,7 +191,11 @@ export class IMLGSData {
             for (const inp of inputs) {
                 if (inp.v) {
                     clauses.push(inp.c);
-                    params.push(inp.v);
+                    // Count number of ? placeholders in the template and add value for each
+                    const placeholderCount = (inp.c.match(/\?/g) || []).length;
+                    for (let i = 0; i < placeholderCount; i++) {
+                        params.push(inp.v);
+                    }
                 }
             }
             if (params.length > 0){
@@ -440,13 +444,38 @@ export class IMLGSData {
     async newTextInputObserver(column, label, template, urlKey = null) {
         // Look for URL parameter
         const urlVal = getURLParam(urlKey || column);
-        
+
         // Pass urlVal as the 3rd argument to newTextInput
         const inputer = await this.newTextInput(column, label, urlVal);
-        
+
         const res = Generators.observe((notify) => {
             const inputted = () => {
                 notify({"v":inputer.value, "c": template});
+            };
+            inputted();
+            inputer.addEventListener("input", inputted);
+            return () => inputer.removeEventListener("input", inputted);
+        });
+        ui_inputs.push(res);
+        return [inputer, res];
+    }
+
+    // --- Search input for sample identifiers (IMLGS ID or IGSN) ---
+    async newSearchInputObserver(label, template, urlKey = null) {
+        // Look for URL parameter
+        const urlVal = getURLParam(urlKey);
+
+        const inputer = Inputs.text({
+            label: label,
+            placeholder: "IMLGS ID or IGSN",
+            submit: false,
+            autocomplete: "off",
+            value: urlVal || ""
+        });
+
+        const res = Generators.observe((notify) => {
+            const inputted = () => {
+                notify({"v": inputer.value, "c": template});
             };
             inputted();
             inputer.addEventListener("input", inputted);

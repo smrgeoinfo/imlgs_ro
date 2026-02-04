@@ -77,8 +77,14 @@ const display_fields = [
     "water_depth",
 ];
 
-const pq_source = "https://imlgs-waf.s3.us-east-2.amazonaws.com/imlgs_full.parquet";
-//const pq_source = "https://zenodo.org/api/records/16389102/files/imlgs_full_2.parquet/content";
+// --- Data Source Configuration ---
+// Set USE_LOCAL_DATA to true for local development, false for remote/production
+const USE_LOCAL_DATA = true;
+
+const REMOTE_PARQUET_URL = "https://imlgs-waf.s3.us-east-2.amazonaws.com/imlgs_full.parquet";
+const LOCAL_PARQUET_PATH = import.meta.resolve("./data/imlgs_full.parquet");
+
+const pq_source = USE_LOCAL_DATA ? LOCAL_PARQUET_PATH : REMOTE_PARQUET_URL;
 const imlgs_data = new IMLGSData(pq_source, "imlgs", display_fields);
 await imlgs_data.initialize()
 ```
@@ -118,16 +124,22 @@ const [_repository_input, repository_input] = await imlgs_data.newInputObserver(
     "repository" // URL param: ?repository=...
 );
 const [_cruise_input, cruise_input] = await imlgs_data.newTextInputObserver(
-    "cruise.cruise", 
-    "Cruise", 
+    "cruise.cruise",
+    "Cruise",
     "cruise.cruise=?",
     "cruise" // URL param: ?cruise=...
+);
+const [_search_input, search_input] = await imlgs_data.newSearchInputObserver(
+    "Sample ID",
+    "(regexp_matches(imlgs,?,'i') OR regexp_matches(igsn,?,'i'))",
+    "search" // URL param: ?search=...
 );
 
 display(_platform_input);
 display(_device_input);
 display(_repository_input);
 display(_cruise_input);
+display(_search_input);
 
 const selectedRecordJson = Mutable("");
 
@@ -181,6 +193,7 @@ ui_inputs.push(platform_input);
 ui_inputs.push(device_input)
 ui_inputs.push(repository_input);
 ui_inputs.push(cruise_input);
+ui_inputs.push(search_input);
 
 //const inputs = [platform_input, device_input, repository_input]
 let theRecords = getMatchingRecords(ui_inputs);
