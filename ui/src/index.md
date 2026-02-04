@@ -79,7 +79,7 @@ const display_fields = [
 
 // --- Data Source Configuration ---
 // Set USE_LOCAL_DATA to true for local development, false for remote/production
-const USE_LOCAL_DATA = true;
+const USE_LOCAL_DATA = false;
 
 const REMOTE_PARQUET_URL = "https://imlgs-waf.s3.us-east-2.amazonaws.com/imlgs_full.parquet";
 const LOCAL_PARQUET_PATH = import.meta.resolve("./data/imlgs_full.parquet");
