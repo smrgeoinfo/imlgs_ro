@@ -9,7 +9,7 @@ This project was created to preserve access to the IMLGS data after the original
 The application allows users to:
 - Browse and search geological sample records
 - Filter by platform, device, repository, cruise, and sample identifiers (IMLGS ID or IGSN)
-- View sample locations on an interactive map
+- View sample locations on an interactive map with "Zoom to Sample" button
 - Auto-display sample details when searching by identifier (works in both Map and Table views)
 - Access detailed sample metadata including stratigraphic intervals
 - Link to external IGSN resolver for registered samples
@@ -54,7 +54,7 @@ imlgs_ro/
 
 3. **Reactive Filtering**: User inputs (dropdowns, text fields) generate SQL WHERE clauses that filter records in real-time. The `IMLGSData` class in `common.js` manages query construction and execution. When filtering by Sample ID, the first matching record is automatically selected and its details displayed.
 
-4. **Map Visualization**: Sample locations are rendered as WebGL points on an OpenLayers map, color-coded by repository. The map supports hover tooltips, click-to-select, and viewport-based counting.
+4. **Map Visualization**: Sample locations are rendered as WebGL points on an OpenLayers map, color-coded by repository. The map supports hover tooltips, click-to-select, viewport-based counting, and a "Zoom to Sample" button that zooms to fit all filtered samples (with a minimum 20 km extent).
 
 5. **URL Parameters**: Filters can be applied via URL query parameters (e.g., `?platform=JOIDES&cruise=ODP191&search=NAU`).
 

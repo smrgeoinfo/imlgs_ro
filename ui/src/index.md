@@ -228,7 +228,6 @@ Visible in map: ${visibleRecordCount}
                     
 <!-- The map container -->
 <section id="olmap" class="map tab-panel">
-<div id="infooverlay"></div>
 
 
 ```js
@@ -247,7 +246,7 @@ async function installMap(mapElement, infoElement) {
     });
     options.wrapX = true;
     const _target = document.getElementById(mapElement);
-    _target.innerHTML = `<div id='${infoElement}'></div>`;
+    _target.innerHTML = `<div id='${infoElement}'></div><button id="zoomToSampleBtn" title="Zoom to selected sample">Zoom to Sample</button>`;
     const map = new ol.Map({
         //controls: defaultControls().extend([new FullScreen()]),
         layers: [
@@ -470,6 +469,46 @@ function zoomToPid(pid) {
         }
     }
 }
+
+function zoomToAllSamples() {
+    const source = map_data_layers.samples.getSource();
+    const features = source.getFeatures();
+    if (features.length === 0) {
+        return;
+    }
+
+    // Get extent of all features
+    let extent = source.getExtent();
+
+    // Minimum extent size: 20 km in meters (EPSG:3857)
+    const minSize = 20000;
+    const width = extent[2] - extent[0];
+    const height = extent[3] - extent[1];
+
+    // Expand extent if smaller than minimum
+    if (width < minSize) {
+        const centerX = (extent[0] + extent[2]) / 2;
+        extent[0] = centerX - minSize / 2;
+        extent[2] = centerX + minSize / 2;
+    }
+    if (height < minSize) {
+        const centerY = (extent[1] + extent[3]) / 2;
+        extent[1] = centerY - minSize / 2;
+        extent[3] = centerY + minSize / 2;
+    }
+
+    const view = map.getView();
+    view.fit(extent, {
+        padding: [20, 20, 20, 20],
+        maxZoom: 12
+    });
+}
+
+// Setup zoom to sample button
+const zoomBtn = document.getElementById('zoomToSampleBtn');
+zoomBtn.addEventListener('click', () => {
+    zoomToAllSamples();
+});
 
 ```
 
