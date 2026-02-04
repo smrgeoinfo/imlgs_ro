@@ -78,10 +78,8 @@ const display_fields = [
 ];
 
 // --- Data Source Configuration ---
-// For local development: copy data/imlgs_full.parquet to ui/src/data/ and use:
-//   const pq_source = import.meta.resolve("./data/imlgs_full.parquet");
-// For production: use the remote URL
-const pq_source = "https://imlgs-waf.s3.us-east-2.amazonaws.com/imlgs_full.parquet";
+// Parquet file is bundled with the application to avoid CORS issues
+const pq_source = import.meta.resolve("./data/imlgs_full.parquet");
 const imlgs_data = new IMLGSData(pq_source, "imlgs", display_fields);
 await imlgs_data.initialize()
 ```
