@@ -78,13 +78,10 @@ const display_fields = [
 ];
 
 // --- Data Source Configuration ---
-// Set USE_LOCAL_DATA to true for local development, false for remote/production
-const USE_LOCAL_DATA = false;
-
-const REMOTE_PARQUET_URL = "https://imlgs-waf.s3.us-east-2.amazonaws.com/imlgs_full.parquet";
-const LOCAL_PARQUET_PATH = import.meta.resolve("./data/imlgs_full.parquet");
-
-const pq_source = USE_LOCAL_DATA ? LOCAL_PARQUET_PATH : REMOTE_PARQUET_URL;
+// For local development: copy data/imlgs_full.parquet to ui/src/data/ and use:
+//   const pq_source = import.meta.resolve("./data/imlgs_full.parquet");
+// For production: use the remote URL
+const pq_source = "https://imlgs-waf.s3.us-east-2.amazonaws.com/imlgs_full.parquet";
 const imlgs_data = new IMLGSData(pq_source, "imlgs", display_fields);
 await imlgs_data.initialize()
 ```
